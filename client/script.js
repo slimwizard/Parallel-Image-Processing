@@ -2,6 +2,9 @@
 let uploadedImage;
 const serviceUrl = "http://localhost:42658/api/request"
 
+// TODO: return data from Request server and display prediction underneath picture.
+
+
 const readImage = (input) => {
     if (input.files && input.files[0]) {
         var reader = new FileReader();
@@ -16,6 +19,9 @@ const readImage = (input) => {
     }
 }
 
+
+// sendImage() will handle response from server and create DOM elements
+// to display prediction and possibly other relevant data. 
 const sendImage = (form) => {
     fetch(serviceUrl, 
         {
