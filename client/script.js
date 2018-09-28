@@ -1,9 +1,7 @@
-
 let uploadedImage;
 const serviceUrl = "http://localhost:42658/api/request"
 
 // TODO: return data from Request server and display prediction underneath picture.
-
 
 const readImage = (input) => {
     if (input.files && input.files[0]) {
@@ -19,24 +17,25 @@ const readImage = (input) => {
     }
 }
 
-
-// sendImage() will handle response from server and create DOM elements
+// handleResponse will handle response(duh) from server and create DOM elements
 // to display prediction and possibly other relevant data. 
+const handleResponse = (response) => {
+    return true
+}
+
 const sendImage = (form) => {
-    fetch(serviceUrl, 
-        {
+    fetch(serviceUrl, {
             method: "POST", 
             mode: "no-cors", 
             enctype: 'multipart/form-data',
             body: form,
-        }).then(response => console.log(response))
+        }).then(response => handleResponse(response))
 }
 
-
 const getPrediction = () => {
-    let form = new FormData()
-    form.append("file", uploadedImage.files[0])
     if (uploadedImage){
+        let form = new FormData()
+        form.append("file", uploadedImage.files[0])
         sendImage(form)
     } else { console.log("no image uploaded")}
 }
