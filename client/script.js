@@ -16,27 +16,17 @@ const readImage = (input) => {
     }
 }
 
-
-
-
-const getPrediction =()=> {
-    console.log(uploadedImage.files[0])
+const getPrediction = () => {
     let form = new FormData()
-
     form.append("file", uploadedImage.files[0])
-
-
     if (uploadedImage){
         fetch(serviceUrl, 
             {
-                method: "POST", // *GET, POST, PUT, DELETE, etc.
-                mode: "no-cors", // no-cors, cors, *same-origin
+                method: "POST", 
+                mode: "no-cors", 
                 enctype: 'multipart/form-data',
                 body: form,
             }).then(response => console.log(response))
 
-
-
-
-    } else { console.log("error")}
+    } else { console.log("no image uploaded")}
 }
