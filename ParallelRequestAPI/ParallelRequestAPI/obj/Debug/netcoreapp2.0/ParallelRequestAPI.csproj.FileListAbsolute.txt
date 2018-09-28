@@ -1,0 +1,11 @@
+/Users/mrice/Documents/School/Fall_2018/DS_Cloud_Computing/Group-Project/ParallelRequestAPI/ParallelRequestAPI/bin/Debug/netcoreapp2.0/ParallelRequestAPI.deps.json
+/Users/mrice/Documents/School/Fall_2018/DS_Cloud_Computing/Group-Project/ParallelRequestAPI/ParallelRequestAPI/bin/Debug/netcoreapp2.0/ParallelRequestAPI.runtimeconfig.json
+/Users/mrice/Documents/School/Fall_2018/DS_Cloud_Computing/Group-Project/ParallelRequestAPI/ParallelRequestAPI/bin/Debug/netcoreapp2.0/ParallelRequestAPI.runtimeconfig.dev.json
+/Users/mrice/Documents/School/Fall_2018/DS_Cloud_Computing/Group-Project/ParallelRequestAPI/ParallelRequestAPI/bin/Debug/netcoreapp2.0/ParallelRequestAPI.dll
+/Users/mrice/Documents/School/Fall_2018/DS_Cloud_Computing/Group-Project/ParallelRequestAPI/ParallelRequestAPI/bin/Debug/netcoreapp2.0/ParallelRequestAPI.pdb
+/Users/mrice/Documents/School/Fall_2018/DS_Cloud_Computing/Group-Project/ParallelRequestAPI/ParallelRequestAPI/obj/Debug/netcoreapp2.0/ParallelRequestAPI.csprojResolveAssemblyReference.cache
+/Users/mrice/Documents/School/Fall_2018/DS_Cloud_Computing/Group-Project/ParallelRequestAPI/ParallelRequestAPI/obj/Debug/netcoreapp2.0/ParallelRequestAPI.csproj.CoreCompileInputs.cache
+/Users/mrice/Documents/School/Fall_2018/DS_Cloud_Computing/Group-Project/ParallelRequestAPI/ParallelRequestAPI/obj/Debug/netcoreapp2.0/ParallelRequestAPI.AssemblyInfoInputs.cache
+/Users/mrice/Documents/School/Fall_2018/DS_Cloud_Computing/Group-Project/ParallelRequestAPI/ParallelRequestAPI/obj/Debug/netcoreapp2.0/ParallelRequestAPI.AssemblyInfo.cs
+/Users/mrice/Documents/School/Fall_2018/DS_Cloud_Computing/Group-Project/ParallelRequestAPI/ParallelRequestAPI/obj/Debug/netcoreapp2.0/ParallelRequestAPI.dll
+/Users/mrice/Documents/School/Fall_2018/DS_Cloud_Computing/Group-Project/ParallelRequestAPI/ParallelRequestAPI/obj/Debug/netcoreapp2.0/ParallelRequestAPI.pdb
