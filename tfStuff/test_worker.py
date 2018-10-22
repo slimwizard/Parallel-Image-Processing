@@ -13,7 +13,7 @@ cluster = tf.train.ClusterSpec({
 
 server = tf.train.Server(cluster, job_name="worker", task_index=0)
 
-# by requiring the workers to have the token to do continue, we
+# by requiring the workers to have the token to continue, we
 	# force them to wait for the ps job to initiate computation
 with tf.device("/job:ps/task:0"):
     token = tf.constant(1, tf.float32)
