@@ -1,0 +1,7 @@
+still uses in-graph replication.
+that is, all variables are present on all servers.
+
+one improvement is the use of server.join()
+another is that the graph is defined in a separate file, which we'll need
+
+still need a better way to kill processes when everything's done
