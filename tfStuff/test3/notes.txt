@@ -1,0 +1,5 @@
+this splits up googlenet between a laptop and a single pi.
+it doesn't do so efficiently.
+basically, the first half is on the ps task (laptop), and the second half is on the worker task (pi).
+
+next steps would be to scale up and distribute more efficiently.
