@@ -42,14 +42,17 @@ def build_graph(cluster):
 
     image_size = inception.inception_v1_dist.default_image_size
     with tf.Graph().as_default():
-        # create a "done queue" shared with the ps
+        # create a queues to be shared with the ps
         with tf.device('/job:ps/task:0'):
-            queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='done_queue')
+            done_queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='done_queue')
+            img_ready_queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='img_ready_queue')
+       
+        with tf.device('/job:worker/task:0'):
+            shared_image_shape = np.array([1, 224, 224, 3])  # not great to hard code, but eh
+            shared_image = tf.get_variable("shared_image", shared_image_shape, tf.float32)
         
-         
-        shared_image_shape = tf.get_variable("shared_image_shape", [4], tf.int32)
-        shared_image = tf.get_variable("shared_image", shared_image_shape, tf.float32)
-        
+            # use another queue to block until shared_image is ready
+            tf.Session(server.target).run(img_ready_queue.dequeue())
 
         # Create the model, use the default arg scope to configure the batch norm parameters.
         with slim.arg_scope(inception.inception_v1_dist_arg_scope()):
@@ -66,4 +69,4 @@ def build_graph(cluster):
             probabilities = sess.run(probabilities)
             
             # instead of server.join(), add to the queue
-            sess.run(queue.enqueue(1))
+            sess.run(done_queue.enqueue(1))
