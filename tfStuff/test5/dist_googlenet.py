@@ -49,11 +49,15 @@ def build_graph(cluster, image_url):
         with tf.device('/job:ps/task:0'):
             queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='done_queue')
         
-        image_string = urllib.urlopen(image_url).read()
-        image = tf.image.decode_jpeg(image_string, channels=3)
-        processed_image = inception_preprocessing.preprocess_image(image, image_size, image_size, is_training=False)
-        processed_images  = tf.expand_dims(processed_image, 0)
-        
+            image_string = urllib.urlopen(image_url).read()
+            image = tf.image.decode_jpeg(image_string, channels=3)
+            processed_image = inception_preprocessing.preprocess_image(image, image_size, image_size, is_training=False)
+            processed_images  = tf.expand_dims(processed_image, 0)
+       
+            # share with workers
+            shared_image = tf.identity(processed_images, name="shared_image")
+            shared_image_shape = tf.get_variable("shared_image_shape", [4], tf.int32, tf.shape(shared_image))
+
         # Create the model, use the default arg scope to configure the batch norm parameters.
         with slim.arg_scope(inception.inception_v1_dist_arg_scope()):
             logits, _ = inception.inception_v1_dist(processed_images, num_classes=1001, is_training=False)

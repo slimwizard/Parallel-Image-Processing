@@ -46,16 +46,14 @@ def build_graph(cluster):
         with tf.device('/job:ps/task:0'):
             queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='done_queue')
         
+         
+        shared_image_shape = tf.get_variable("shared_image_shape", [4], tf.int32)
+        shared_image = tf.get_variable("shared_image", shared_image_shape, tf.float32)
         
-        url = 'https://upload.wikimedia.org/wikipedia/commons/7/70/EnglishCockerSpaniel_simon.jpg'
-        image_string = urllib.urlopen(url).read()
-        image = tf.image.decode_jpeg(image_string, channels=3)
-        processed_image = inception_preprocessing.preprocess_image(image, image_size, image_size, is_training=False)
-        processed_images  = tf.expand_dims(processed_image, 0)
-        
+
         # Create the model, use the default arg scope to configure the batch norm parameters.
         with slim.arg_scope(inception.inception_v1_dist_arg_scope()):
-            logits, _ = inception.inception_v1_dist(processed_images, num_classes=1001, is_training=False)
+            logits, _ = inception.inception_v1_dist(shared_image, num_classes=1001, is_training=False)
         probabilities = tf.nn.softmax(logits)
         
         init_fn = slim.assign_from_checkpoint_fn(
@@ -65,7 +63,7 @@ def build_graph(cluster):
 
         with tf.Session(target=server.target) as sess:
             init_fn(sess)
-            np_image, probabilities = sess.run([image, probabilities])
+            probabilities = sess.run(probabilities)
             
             # instead of server.join(), add to the queue
             sess.run(queue.enqueue(1))
