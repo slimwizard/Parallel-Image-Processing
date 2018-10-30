@@ -1,5 +1,5 @@
 let uploadedImage;
-const serviceUrl = "http://localhost:42658/api/request"
+const serviceUrl = "http://localhost:5000/upload"
 
 // TODO: return data from Request server and display prediction underneath picture.
 
@@ -18,15 +18,15 @@ const readImage = (input) => {
 }
 
 // handleResponse will handle response(duh) from server and create DOM elements
-// to display prediction and possibly other relevant data. 
+// to display prediction and possibly other relevant data.
 const handleResponse = (response) => {
     return true
 }
 
 const sendImage = (form) => {
     fetch(serviceUrl, {
-            method: "POST", 
-            mode: "no-cors", 
+            method: "POST",
+            mode: "no-cors",
             enctype: 'multipart/form-data',
             body: form,
         }).then(response => handleResponse(response))
