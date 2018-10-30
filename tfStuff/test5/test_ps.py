@@ -5,4 +5,5 @@ cluster = tf.train.ClusterSpec({
     "worker": ["192.168.0.7:2222"],
     "ps": ["192.168.0.4:2222"]})
 
-dg.build_graph(cluster)
+image_url = 'https://upload.wikimedia.org/wikipedia/commons/7/70/EnglishCockerSpaniel_simon.jpg'
+dg.build_graph(cluster, image_url)

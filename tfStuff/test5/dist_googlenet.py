@@ -25,7 +25,7 @@ from preprocessing import inception_preprocessing
 
 from tensorflow.contrib import slim
 
-def build_graph(cluster):
+def build_graph(cluster, image_url):
     server = tf.train.Server(cluster, job_name="ps", task_index=0)
 
     #download the inception v1 checkpoint
@@ -49,9 +49,7 @@ def build_graph(cluster):
         with tf.device('/job:ps/task:0'):
             queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='done_queue')
         
-        
-        url = 'https://upload.wikimedia.org/wikipedia/commons/7/70/EnglishCockerSpaniel_simon.jpg'
-        image_string = urllib.urlopen(url).read()
+        image_string = urllib.urlopen(image_url).read()
         image = tf.image.decode_jpeg(image_string, channels=3)
         processed_image = inception_preprocessing.preprocess_image(image, image_size, image_size, is_training=False)
         processed_images  = tf.expand_dims(processed_image, 0)
@@ -101,7 +99,6 @@ def build_graph(cluster):
 
 
         # display results
-        print("starting plotting")
         plt.figure()
         plt.imshow(np_image.astype(np.uint8))
         plt.axis('off')
