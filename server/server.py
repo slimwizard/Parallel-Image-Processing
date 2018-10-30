@@ -11,10 +11,6 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route("/")
-def home():
-    return render_template("index.html")
-
 # uploading route, using a default set of file types
 @app.route("/upload", methods = ["GET", "POST"])
 def upload_file():
