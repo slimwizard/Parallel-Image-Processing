@@ -49,7 +49,8 @@ def build_graph(cluster, image_url):
         with tf.device('/job:ps/task:0'):
             done_queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='done_queue')
             img_ready_queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='done_queue')
-        
+       
+            # image preprocessing
             image_string = urllib.urlopen(image_url).read()
             image = tf.image.decode_jpeg(image_string, channels=3)
             processed_image = inception_preprocessing.preprocess_image(image, image_size, image_size, is_training=False)
@@ -64,6 +65,7 @@ def build_graph(cluster, image_url):
             logits, _ = inception.inception_v1_dist(shared_image, num_classes=1001, is_training=False)
         probabilities = tf.nn.softmax(logits)
         
+        # initialization function that uses saved parameters
         init_fn = slim.assign_from_checkpoint_fn(
             os.path.join(checkpoints_dir, 'inception_v1.ckpt'),
             slim.get_model_variables('InceptionV1'))
