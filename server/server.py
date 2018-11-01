@@ -1,4 +1,5 @@
 import os
+import googlenet.test_ps
 from flask import Flask, flash, request, redirect, url_for, render_template, send_from_directory
 from werkzeug.utils import secure_filename
 
@@ -10,6 +11,9 @@ app = Flask(__name__)
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def send_to_googlenet(file_url):
+
 
 # uploading route, using a default set of file types
 @app.route("/upload", methods = ["GET", "POST"])

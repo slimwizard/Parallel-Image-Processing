@@ -1,5 +1,0 @@
-pi uses virtual environment. 
-to activate:
-	source ~/cloud_computing/venv/bin/activate
-to deactivate:
-	deactivate

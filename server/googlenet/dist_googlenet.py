@@ -2,7 +2,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-
 import numpy as np
 import os
 import tensorflow as tf
@@ -49,14 +48,14 @@ def build_graph(cluster, image_url):
         with tf.device('/job:ps/task:0'):
             done_queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='done_queue')
             img_ready_queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='done_queue')
-       
+
             # image preprocessing
             image_string = urllib.urlopen(image_url).read()
             image = tf.image.decode_jpeg(image_string, channels=3)
             processed_image = inception_preprocessing.preprocess_image(image, image_size, image_size, is_training=False)
             processed_images  = tf.expand_dims(processed_image, 0)
             shared_image = tf.identity(processed_images, name="shared_image")
-            
+
             # tell the workers the image preprocessing is done
             tf.Session(server.target).run(img_ready_queue.enqueue(1))
 
@@ -64,12 +63,12 @@ def build_graph(cluster, image_url):
         with slim.arg_scope(inception.inception_v1_dist_arg_scope()):
             logits, _ = inception.inception_v1_dist(shared_image, num_classes=1001, is_training=False)
         probabilities = tf.nn.softmax(logits)
-        
+
         # initialization function that uses saved parameters
         init_fn = slim.assign_from_checkpoint_fn(
             os.path.join(checkpoints_dir, 'inception_v1.ckpt'),
             slim.get_model_variables('InceptionV1'))
-        
+
 
         # time for logging
         now = str(datetime.now())
@@ -77,11 +76,11 @@ def build_graph(cluster, image_url):
         logdir = './logs/'+now
         if not tf.gfile.Exists(logdir):
             tf.gfile.MakeDirs(logdir)
-        
+
         with tf.Session(target=server.target) as sess:
             # recording metadata
             run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-            run_metadata = tf.RunMetadata()     
+            run_metadata = tf.RunMetadata()
             file_writer = tf.summary.FileWriter('./logs/'+now, sess.graph)
 
             # maybe I need this?
@@ -91,11 +90,11 @@ def build_graph(cluster, image_url):
             # run the thing
             init_fn(sess)
             summary, np_image, probabilities = sess.run([merged, image, probabilities], options=run_options, run_metadata=run_metadata)
-            
+
             # instead of join(), wait until all workers have put their 'done' token on the queue
             for i in range(cluster.num_tasks('worker')):
                 sess.run(done_queue.dequeue())
-            
+
             # log metadata
             file_writer.add_run_metadata(run_metadata, now)
             file_writer.add_summary(summary, 1)
