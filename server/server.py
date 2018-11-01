@@ -29,7 +29,8 @@ def upload_file():
             return "Please upload a file."
         if file_uploaded and allowed_file(file_uploaded.filename):
             file_uploaded.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            send_to_googlenet("piss")
+            uploaded_file_url = str(request.base_url) + str(filename)
+            send_to_googlenet(uploaded_file_url)
             return "{0} successfully uploaded.".format(filename)
 
 # redirect to uploaded file
