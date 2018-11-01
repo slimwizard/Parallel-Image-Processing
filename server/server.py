@@ -14,7 +14,7 @@ def allowed_file(filename):
 
 
 def send_to_googlenet(file_url):
-    googlenet.test_ps.pass_url_to_graph('https://upload.wikimedia.org/wikipedia/commons/7/70/EnglishCockerSpaniel_simon.jpg')
+    googlenet.test_ps.pass_url_to_graph(file_url)
     return None
 
 # uploading route, using a default set of file types
