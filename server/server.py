@@ -34,7 +34,7 @@ def upload_file():
             return "{0} successfully uploaded.".format(filename)
 
 # redirect to uploaded file
-@app.route('/images/<filename>')
+@app.route('/upload/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
 
