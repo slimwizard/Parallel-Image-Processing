@@ -3,7 +3,7 @@ import googlenet.test_ps
 from flask import Flask, flash, request, redirect, url_for, render_template, send_from_directory
 from werkzeug.utils import secure_filename
 
-UPLOAD_FOLDER = os.path.join(os.getcwd(), "images/")
+UPLOAD_FOLDER = os.path.join(os.getcwd(), "upload/")
 ALLOWED_EXTENSIONS = set(["png", "jpg", "jpeg", "gif"])
 
 app = Flask(__name__)
