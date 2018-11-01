@@ -12,8 +12,10 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def send_to_googlenet(file_url):
 
+def send_to_googlenet(file_url):
+    googlenet.test_ps.pass_url_to_graph('https://upload.wikimedia.org/wikipedia/commons/7/70/EnglishCockerSpaniel_simon.jpg')
+    return None
 
 # uploading route, using a default set of file types
 @app.route("/upload", methods = ["GET", "POST"])
@@ -27,6 +29,7 @@ def upload_file():
             return "Please upload a file."
         if file_uploaded and allowed_file(file_uploaded.filename):
             file_uploaded.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            send_to_googlenet("piss")
             return "{0} successfully uploaded.".format(filename)
 
 # redirect to uploaded file
