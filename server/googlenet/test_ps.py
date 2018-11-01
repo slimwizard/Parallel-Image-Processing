@@ -1,5 +1,5 @@
 import tensorflow as tf
-import dist_googlenet as dg
+import googlenet.dist_googlenet as dg
 
 def pass_url_to_graph(image_url):
     cluster = tf.train.ClusterSpec({
