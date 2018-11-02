@@ -66,7 +66,7 @@ def build_graph(cluster, image_url=None):
             # now printing debugging info
             run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
             run_metadata = tf.RunMetadata()
-            tf.Session(server.target).run(img_ready_queue.enqueue_many([1]*cluster.num_tasks('worker')), options=run_options, run_metadata=run_metadata)
+            tf.Session(server.target).run(img_ready_queue.enqueue(1), options=run_options, run_metadata=run_metadata)
             for device in run_metadata.step_stats.dev_stats:
                 print(device.device)
                 for node in device.node_stats:
