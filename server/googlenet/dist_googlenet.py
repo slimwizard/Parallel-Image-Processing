@@ -29,9 +29,9 @@ from preprocessing import inception_preprocessing
 
 from tensorflow.contrib import slim
 
-def build_graph(cluster, image_url=None):
+def build_graph(cluster, image_url, return_list):
     # probabilities listing
-    prob_list = []
+    prob_list = return_list
     # default picture for testing
     if image_url == None:
         image_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Bow_bow.jpg/800px-Bow_bow.jpg"
@@ -155,4 +155,3 @@ def build_graph(cluster, image_url=None):
             probability = 'Probability %0.2f%% => [%s]' % (probabilities[index] * 100, names[index])
             prob_list.append(probability)
             print(probability)
-        return prob_list
