@@ -30,8 +30,10 @@ def upload_file():
         if file_uploaded and allowed_file(file_uploaded.filename):
             file_uploaded.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             uploaded_file_url = str(request.base_url) + "/" + str(filename)
-            send_to_googlenet(uploaded_file_url)
-            return "{0} successfully uploaded.".format(filename)
+            test = send_to_googlenet(uploaded_file_url)
+            print(str(test))
+            return test
+            #return "{0} successfully uploaded.".format(filename)
 
 # redirect to uploaded file
 @app.route('/upload/<filename>')
