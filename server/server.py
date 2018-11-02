@@ -14,8 +14,7 @@ def allowed_file(filename):
 
 
 def send_to_googlenet(file_url):
-    googlenet.test_ps.pass_url_to_graph(file_url)
-    return None
+    return googlenet.test_ps.pass_url_to_graph(file_url)
 
 # uploading route, using a default set of file types
 @app.route("/upload", methods = ["GET", "POST"])
@@ -30,8 +29,9 @@ def upload_file():
         if file_uploaded and allowed_file(file_uploaded.filename):
             file_uploaded.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             uploaded_file_url = str(request.base_url) + "/" + str(filename)
-            send_to_googlenet(uploaded_file_url)
-            return "{0} successfully uploaded.".format(filename)
+            test = send_to_googlenet(uploaded_file_url)
+            return str(test)
+            #return "{0} successfully uploaded.".format(filename)
 
 # redirect to uploaded file
 @app.route('/upload/<filename>')
