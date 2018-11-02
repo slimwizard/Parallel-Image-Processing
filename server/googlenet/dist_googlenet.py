@@ -61,7 +61,15 @@ def build_graph(cluster, image_url=None):
             shared_image = tf.identity(processed_images, name="shared_image")
 
             # tell the workers the image preprocessing is done
-            tf.Session(server.target).run(img_ready_queue.enqueue(1))
+            # now printing debugging info
+            run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+            run_metadata = tf.RunMetadata()
+            tf.Session(server.target).run(img_ready_queue.enqueue_many([1]*cluster.num_tasks('worker')), options=run_options, run_metadata=run_metadata)
+            for device in run_metadata.step_stats.dev_stats:
+                print(device.device)
+                for node in device.node_stats:
+                    print("  ", node.node_name)
+
 
         # Create the model, use the default arg scope to configure the batch norm parameters.
         with slim.arg_scope(inception.inception_v1_dist_arg_scope()):
@@ -92,12 +100,24 @@ def build_graph(cluster, image_url=None):
             merged = tf.summary.merge_all()
 
             # run the thing
+            # now printing for debugging
             init_fn(sess)
             summary, np_image, probabilities = sess.run([merged, image, probabilities], options=run_options, run_metadata=run_metadata)
+            for device in run_metadata.step_stats.dev_stats:
+                print(device.device)
+                for node in device.node_stats:
+                    print("  ", node.node_name)
 
             # instead of join(), wait until all workers have put their 'done' token on the queue
+            # now printing for debugging
             for i in range(cluster.num_tasks('worker')):
-                sess.run(done_queue.dequeue())
+                run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+                run_metadata = tf.RunMetadata()
+                sess.run(done_queue.dequeue(), options=run_options, run_metadata=run_metadata)
+                for device in run_metadata.step_stats.dev_stats:
+                    print(device.device)
+                    for node in device.node_stats:
+                        print("  ", node.node_name)
 
             # log metadata
             file_writer.add_run_metadata(run_metadata, now)
