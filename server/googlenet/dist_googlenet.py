@@ -14,8 +14,13 @@ try:
 except ImportError:
     import urllib.request as urllib
 
+import os
 import sys
-sys.path.append("../models/research/slim/")
+cwd = os.getcwd()
+if cwd[-len("googlenet"):] == "googlenet": # if we're testing and running direclty from the googlenet/ folder
+    sys.path.append("../../models/research/slim/")
+else:
+    sys.path.append("../models/research/slim/")
 
 from datasets import imagenet
 from datasets import dataset_utils
@@ -24,9 +29,9 @@ from preprocessing import inception_preprocessing
 
 from tensorflow.contrib import slim
 
-def build_graph(cluster, image_url=None):
+def build_graph(cluster, image_url, return_list):
     # probabilities listing
-    prob_list = []
+    prob_list = return_list
     # default picture for testing
     if image_url == None:
         image_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Bow_bow.jpg/800px-Bow_bow.jpg"
@@ -66,11 +71,16 @@ def build_graph(cluster, image_url=None):
             # now printing debugging info
             run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
             run_metadata = tf.RunMetadata()
+            
+            #TODO: call enqueue_many to put one item on queue per worker
+                # do this after stopping is fixed
             tf.Session(server.target).run(img_ready_queue.enqueue(1), options=run_options, run_metadata=run_metadata)
-            for device in run_metadata.step_stats.dev_stats:
-                print(device.device)
-                for node in device.node_stats:
-                    print("  ", node.node_name)
+            print("Image ready enqueue!")
+            
+            #for device in run_metadata.step_stats.dev_stats:
+            #    print(device.device)
+            #    for node in device.node_stats:
+            #        print("  ", node.node_name)
 
 
         # Create the model, use the default arg scope to configure the batch norm parameters.
@@ -98,17 +108,17 @@ def build_graph(cluster, image_url=None):
             file_writer = tf.summary.FileWriter('./logs/'+now, sess.graph)
 
             # maybe I need this?
-            tf.summary.scalar('dummy', tf.reduce_mean(probabilities))
-            merged = tf.summary.merge_all()
+            #tf.summary.scalar('dummy', tf.reduce_mean(probabilities))
+            #merged = tf.summary.merge_all()
 
             # run the thing
             # now printing for debugging
             init_fn(sess)
-            summary, np_image, probabilities = sess.run([merged, image, probabilities], options=run_options, run_metadata=run_metadata)
-            for device in run_metadata.step_stats.dev_stats:
-                print(device.device)
-                for node in device.node_stats:
-                    print("  ", node.node_name)
+            np_image, probabilities = sess.run([image, probabilities], options=run_options, run_metadata=run_metadata)
+            #for device in run_metadata.step_stats.dev_stats:
+            #    print(device.device)
+            #    for node in device.node_stats:
+            #        print("  ", node.node_name)
 
             # instead of join(), wait until all workers have put their 'done' token on the queue
             # now printing for debugging
@@ -116,14 +126,17 @@ def build_graph(cluster, image_url=None):
                 run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
                 run_metadata = tf.RunMetadata()
                 sess.run(done_queue.dequeue(), options=run_options, run_metadata=run_metadata)
-                for device in run_metadata.step_stats.dev_stats:
-                    print(device.device)
-                    for node in device.node_stats:
-                        print("  ", node.node_name)
+                print("Done dequeue!")
+
+
+            #    for device in run_metadata.step_stats.dev_stats:
+            #        print(device.device)
+            #        for node in device.node_stats:
+            #            print("  ", node.node_name)
 
             # log metadata
             file_writer.add_run_metadata(run_metadata, now)
-            file_writer.add_summary(summary, 1)
+            #file_writer.add_summary(summary, 1)
             file_writer.close()
 
             probabilities = probabilities[0, 0:]
@@ -142,4 +155,3 @@ def build_graph(cluster, image_url=None):
             probability = 'Probability %0.2f%% => [%s]' % (probabilities[index] * 100, names[index])
             prob_list.append(probability)
             print(probability)
-        return prob_list

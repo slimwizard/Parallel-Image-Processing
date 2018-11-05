@@ -2,6 +2,7 @@ import os
 import googlenet.test_ps
 from flask import Flask, flash, request, redirect, url_for, render_template, send_from_directory
 from werkzeug.utils import secure_filename
+import multiprocessing
 
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "upload/")
 ALLOWED_EXTENSIONS = set(["png", "jpg", "jpeg", "gif"])
@@ -13,8 +14,17 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-def send_to_googlenet(file_url):
-    return googlenet.test_ps.pass_url_to_graph(file_url)
+def send_to_googlenet(file_url, return_list):
+    googlenet.test_ps.pass_url_to_graph(file_url, return_list)
+
+# only handles passing one argument
+def spawn_process(func, arg):
+    manager = multiprocessing.Manager()
+    return_list = manager.list()
+    p = multiprocessing.Process(target=func, args=(arg,return_list))
+    p.start()
+    p.join()
+    return return_list
 
 # uploading route, using a default set of file types
 @app.route("/upload", methods = ["GET", "POST"])
@@ -29,9 +39,8 @@ def upload_file():
         if file_uploaded and allowed_file(file_uploaded.filename):
             file_uploaded.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             uploaded_file_url = str(request.base_url) + "/" + str(filename)
-            test = send_to_googlenet(uploaded_file_url)
-            return str(test)
-            #return "{0} successfully uploaded.".format(filename)
+            probabilities = spawn_process(send_to_googlenet, uploaded_file_url)
+            return str(probabilities)
 
 # redirect to uploaded file
 @app.route('/upload/<filename>')

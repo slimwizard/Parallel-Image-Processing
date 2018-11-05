@@ -20,7 +20,9 @@ const readImage = (input) => {
 // handleResponse will handle response(duh) from server and create DOM elements
 // to display prediction and possibly other relevant data.
 const handleResponse = (response) => {
-    return true
+    var probability_text = document.getElementById("probability");
+    console.log(response);
+    probability_text.value = response;
 }
 
 const sendImage = (form) => {
