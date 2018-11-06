@@ -60,8 +60,6 @@ def inception_v1_dist_base(inputs,
             
         with slim.arg_scope([slim.conv2d, slim.max_pool2d],
                               stride=1, padding='SAME'):
-            
-          with tf.device("/job:ps/task:0"):
             # head
             end_point = 'Conv2d_1a_7x7'
             net = slim.conv2d(inputs, 64, [7, 7], stride=2, scope=end_point) # 7x7 convolution
@@ -173,7 +171,6 @@ def inception_v1_dist_base(inputs,
             end_points[end_point] = net
             if final_endpoint == end_point: return net, end_points
 
-          with tf.device("/job:worker/task:0"):
             # inception (4c)
             end_point = 'Mixed_4d'
             with tf.variable_scope(end_point):
@@ -334,7 +331,6 @@ def inception_v1_dist(inputs,
                         is_training=is_training):
       net, end_points = inception_v1_dist_base(inputs, scope=scope)
       with tf.variable_scope('Logits'):
-          with tf.device("/job:worker/task:0"):
             if global_pool:
               # Global average pooling.
               net = tf.reduce_mean(net, [1, 2], keep_dims=True, name='global_pool')  # average pooling

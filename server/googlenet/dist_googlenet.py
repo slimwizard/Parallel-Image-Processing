@@ -75,18 +75,14 @@ def build_graph(cluster, image_url, return_list):
             #TODO: call enqueue_many to put one item on queue per worker
                 # do this after stopping is fixed
             tf.Session(server.target).run(img_ready_queue.enqueue(1), options=run_options, run_metadata=run_metadata)
-            print("Image ready enqueue!")
+            #print("Image ready enqueue!")
             
-            #for device in run_metadata.step_stats.dev_stats:
-            #    print(device.device)
-            #    for node in device.node_stats:
-            #        print("  ", node.node_name)
-
 
         # Create the model, use the default arg scope to configure the batch norm parameters.
         with slim.arg_scope(inception.inception_v1_dist_arg_scope()):
-            logits, _ = inception.inception_v1_dist(shared_image, num_classes=1001, is_training=False)
-        probabilities = tf.nn.softmax(logits)
+            with tf.device(tf.train.replica_setter(cluster=cluster):
+                logits, _ = inception.inception_v1_dist(shared_image, num_classes=1001, is_training=False)
+                probabilities = tf.nn.softmax(logits)
 
         # initialization function that uses saved parameters
         init_fn = slim.assign_from_checkpoint_fn(
@@ -107,18 +103,15 @@ def build_graph(cluster, image_url, return_list):
             run_metadata = tf.RunMetadata()
             file_writer = tf.summary.FileWriter('./logs/'+now, sess.graph)
 
-            # maybe I need this?
-            #tf.summary.scalar('dummy', tf.reduce_mean(probabilities))
-            #merged = tf.summary.merge_all()
-
             # run the thing
-            # now printing for debugging
             init_fn(sess)
             np_image, probabilities = sess.run([image, probabilities], options=run_options, run_metadata=run_metadata)
-            #for device in run_metadata.step_stats.dev_stats:
-            #    print(device.device)
-            #    for node in device.node_stats:
-            #        print("  ", node.node_name)
+
+            # see who did what
+            for device in run_metadata.step_stats.dev_stats:
+                print(device.device)
+                for node in device.node_stats:
+                    print("  ", node.node_name)
 
             # instead of join(), wait until all workers have put their 'done' token on the queue
             # now printing for debugging
@@ -126,17 +119,10 @@ def build_graph(cluster, image_url, return_list):
                 run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
                 run_metadata = tf.RunMetadata()
                 sess.run(done_queue.dequeue(), options=run_options, run_metadata=run_metadata)
-                print("Done dequeue!")
-
-
-            #    for device in run_metadata.step_stats.dev_stats:
-            #        print(device.device)
-            #        for node in device.node_stats:
-            #            print("  ", node.node_name)
+                #print("Done dequeue!")
 
             # log metadata
             file_writer.add_run_metadata(run_metadata, now)
-            #file_writer.add_summary(summary, 1)
             file_writer.close()
 
             probabilities = probabilities[0, 0:]
