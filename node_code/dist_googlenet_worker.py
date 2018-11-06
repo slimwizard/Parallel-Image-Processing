@@ -44,16 +44,18 @@ def build_graph(cluster, task):
     with tf.Graph().as_default():
         # create a queues to be shared with the ps
         with tf.device('/job:worker/task:'+str(task)):
-            done_queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='done_queue')
+            done_queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='done_queue', shapes=[])
             img_ready_queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='img_ready_queue')
        
             shared_image_shape = np.array([1, 224, 224, 3])  # not great to hard code, but eh
             shared_image = tf.get_variable("shared_image", shared_image_shape, tf.float32)
       
             # use this queue to block until shared_image is ready
-            dequeue_op = img_ready_queue.dequeue
-            
-        tf.Session(server.target).run(dequeue_op())
+            dequeue_op = img_ready_queue.dequeue()
+        
+        print("before img dequeue op")
+        tf.Session(server.target).run(dequeue_op)
+        print("after img dq op")
         #print("Image ready dequeue!")
 
 
@@ -73,5 +75,7 @@ def build_graph(cluster, task):
             probabilities = sess.run(probabilities)
             
             # instead of server.join(), add to the queue
+            print("before done enqueue")
             sess.run(done_queue.enqueue(1))
+            print("after done enqueue")
             #print("Done enqueue!")
