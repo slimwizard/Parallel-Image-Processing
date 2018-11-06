@@ -1,9 +1,32 @@
 import tensorflow as tf
 import dist_googlenet_worker as dg
+import socket
 
-cluster = tf.train.ClusterSpec({
-    "worker": ["192.168.0.7:2222"],
-    "ps": ["192.168.0.4:2222"]
-    })
+# distribute this code exactly to all workers
+# functionality depends on the jobs dictionary being exactly the same
+def main():
+    jobs = {
+            "worker": ["192.168.0.5:2222"],
+             "ps": ["192.168.0.3:2222"]
+           }
+    cluster = tf.train.ClusterSpec(jobs)
 
-dg.build_graph(cluster)
+    my_ip = get_ip()
+    task = jobs["worker"].index(my_ip+':2222')
+
+    dg.build_graph(cluster, task)
+
+
+def get_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # doesn't even have to be reachable
+        s.connect(('10.255.255.255', 1))
+        IP = s.getsockname()[0]
+    except:
+        IP = '127.0.0.1'
+    finally:
+        s.close()
+    return IP
+
+main()

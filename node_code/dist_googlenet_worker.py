@@ -25,8 +25,8 @@ from preprocessing import inception_preprocessing
 
 from tensorflow.contrib import slim
 
-def build_graph(cluster):
-    server = tf.train.Server(cluster, job_name='worker', task_index=0)
+def build_graph(cluster, task):
+    server = tf.train.Server(cluster, job_name='worker', task_index=task)
 
     #download the inception v1 checkpoint
     url = "http://download.tensorflow.org/models/inception_v1_2016_08_28.tar.gz"
@@ -43,21 +43,26 @@ def build_graph(cluster):
     image_size = inception.inception_v1_dist.default_image_size
     with tf.Graph().as_default():
         # create a queues to be shared with the ps
-        with tf.device('/job:ps/task:0'):
-            done_queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='done_queue')
+        with tf.device('/job:worker/task:'+str(task)):
+            done_queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='done_queue', shapes=[])
             img_ready_queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='img_ready_queue')
        
-        with tf.device('/job:worker/task:0'):
+            # use this queue to block until shared_image is ready
+            dequeue_op = img_ready_queue.dequeue()
+       
+            print("before img dequeue op")
+            tf.Session(server.target).run(dequeue_op)
+            print("Image ready dequeue!")
+            
+            # now get the image
             shared_image_shape = np.array([1, 224, 224, 3])  # not great to hard code, but eh
             shared_image = tf.get_variable("shared_image", shared_image_shape, tf.float32)
-        
-            # use another queue to block until shared_image is ready
-            tf.Session(server.target).run(img_ready_queue.dequeue())
 
         # Create the model, use the default arg scope to configure the batch norm parameters.
         with slim.arg_scope(inception.inception_v1_dist_arg_scope()):
-            logits, _ = inception.inception_v1_dist(shared_image, num_classes=1001, is_training=False)
-        probabilities = tf.nn.softmax(logits)
+            with tf.device(tf.train.replica_setter(cluster=cluster)):
+                logits, _ = inception.inception_v1_dist(shared_image, num_classes=1001, is_training=False)
+                probabilities = tf.nn.softmax(logits)
         
         init_fn = slim.assign_from_checkpoint_fn(
             os.path.join(checkpoints_dir, 'inception_v1.ckpt'),
@@ -69,4 +74,7 @@ def build_graph(cluster):
             probabilities = sess.run(probabilities)
             
             # instead of server.join(), add to the queue
+            print("before done enqueue")
             sess.run(done_queue.enqueue(1))
+            print("after done enqueue")
+            #print("Done enqueue!")
