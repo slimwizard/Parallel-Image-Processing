@@ -1,7 +1,7 @@
 let uploadedImage;
 const serviceUrl = "http://localhost:5000/upload"
 
-// TODO: return data from Request server and display prediction underneath picture.
+const button = document.getElementById('submit')
 
 const readImage = (input) => {
     if (input.files && input.files[0]) {
@@ -20,18 +20,20 @@ const readImage = (input) => {
 // handleResponse will handle response(duh) from server and create DOM elements
 // to display prediction and possibly other relevant data.
 const handleResponse = (response) => {
-    var probability_text = document.getElementById("probability");
+    var probability_text = document.getElementById("probabilities");
     console.log(response);
-    probability_text.value = response;
+    probability_text.innerHTML = response.key;
+    button.value = "SUBMIT"
 }
 
 const sendImage = (form) => {
-    fetch(serviceUrl, {
+	button.value = "SENDING..."
+
+    	fetch(serviceUrl, {
             method: "POST",
-            mode: "no-cors",
             enctype: 'multipart/form-data',
             body: form,
-        }).then(response => handleResponse(response))
+        }).then(response => response.json()).then(data=>{ handleResponse(data) })
 }
 
 const getPrediction = () => {

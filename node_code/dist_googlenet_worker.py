@@ -16,7 +16,7 @@ except ImportError:
     import urllib.request as urllib
 
 import sys
-sys.path.append("./models/research/slim/")
+sys.path.append("../models/research/slim/")
 
 from datasets import imagenet
 from datasets import dataset_utils

@@ -1,13 +1,15 @@
 import os
 import googlenet.test_ps
-from flask import Flask, flash, request, redirect, url_for, render_template, send_from_directory
+from flask import Flask, flash, request, redirect, url_for, render_template, send_from_directory, jsonify, Response
 from werkzeug.utils import secure_filename
 import multiprocessing
+from flask_cors import CORS, cross_origin
 
 UPLOAD_FOLDER = os.path.join(os.getcwd(), "upload/")
 ALLOWED_EXTENSIONS = set(["png", "jpg", "jpeg", "gif"])
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/upload": {"origins": "http://localhost:8000"}})
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -28,6 +30,7 @@ def spawn_process(func, arg):
 
 # uploading route, using a default set of file types
 @app.route("/upload", methods = ["GET", "POST"])
+@cross_origin(origin='localhost', headers=['Content- Type'])
 def upload_file():
     if request.method == "POST":
         if "file" not in request.files:
@@ -40,7 +43,9 @@ def upload_file():
             file_uploaded.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             uploaded_file_url = str(request.base_url) + "/" + str(filename)
             probabilities = spawn_process(send_to_googlenet, uploaded_file_url)
-            return str(probabilities)
+            #probabilities = ["string1", "string2", "string3"]
+            toprint = "<br>".join(probabilities)
+            return jsonify({'key':toprint}), 200
 
 # redirect to uploaded file
 @app.route('/upload/<filename>')
