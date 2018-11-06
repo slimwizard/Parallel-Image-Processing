@@ -12,3 +12,5 @@ this was for developing a graceful exit. inspiration from here:
 https://stackoverflow.com/questions/39810356/shut-down-server-in-tensorflow#
 
 for some reason, the pi now complains about over 10% of its memory being allocated
+
+right now, everything happens twice

@@ -47,17 +47,16 @@ def build_graph(cluster, task):
             done_queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='done_queue', shapes=[])
             img_ready_queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='img_ready_queue')
        
-            shared_image_shape = np.array([1, 224, 224, 3])  # not great to hard code, but eh
-            shared_image = tf.get_variable("shared_image", shared_image_shape, tf.float32)
-      
             # use this queue to block until shared_image is ready
             dequeue_op = img_ready_queue.dequeue()
-        
-        print("before img dequeue op")
-        tf.Session(server.target).run(dequeue_op)
-        print("after img dq op")
-        #print("Image ready dequeue!")
-
+       
+            print("before img dequeue op")
+            tf.Session(server.target).run(dequeue_op)
+            print("Image ready dequeue!")
+            
+            # now get the image
+            shared_image_shape = np.array([1, 224, 224, 3])  # not great to hard code, but eh
+            shared_image = tf.get_variable("shared_image", shared_image_shape, tf.float32)
 
         # Create the model, use the default arg scope to configure the batch norm parameters.
         with slim.arg_scope(inception.inception_v1_dist_arg_scope()):

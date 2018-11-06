@@ -67,15 +67,12 @@ def build_graph(cluster, image_url, return_list):
             processed_images  = tf.expand_dims(processed_image, 0)
             shared_image = tf.identity(processed_images, name="shared_image")
             
-            #TODO: call enqueue_many to put one item on queue per worker
-                # do this after stopping is fixed
-            enqueue_op = img_ready_queue.enqueue
+            enqueue_op = img_ready_queue.enqueue_many(tf.fill([cluster.num_tasks('worker')], 1))
             
         # tell the workers the image preprocessing is done
-        run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-        run_metadata = tf.RunMetadata()
-        tf.Session(server.target).run(enqueue_op(1), options=run_options, run_metadata=run_metadata)
-        #print("Image ready enqueue!")
+        print("before img ready enqueue")
+        tf.Session(server.target).run(enqueue_op)
+        print("Image ready enqueue!")
 
         # Create the model, use the default arg scope to configure the batch norm parameters.
         with slim.arg_scope(inception.inception_v1_dist_arg_scope()):
@@ -104,7 +101,9 @@ def build_graph(cluster, image_url, return_list):
 
             # run the thing
             init_fn(sess)
+            print("before getting probs")
             np_image, probabilities = sess.run([image, probabilities], options=run_options, run_metadata=run_metadata)
+            print("after getting probs")
 
             # see who did what
             for device in run_metadata.step_stats.dev_stats:
@@ -117,8 +116,10 @@ def build_graph(cluster, image_url, return_list):
             for i in range(cluster.num_tasks('worker')):
                 run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
                 run_metadata = tf.RunMetadata()
+                
+                print("before dequeue")
                 sess.run(done_queue.dequeue(), options=run_options, run_metadata=run_metadata)
-                #print("Done dequeue!")
+                print("Done dequeue!")
 
             # log metadata
             file_writer.add_run_metadata(run_metadata, now)
