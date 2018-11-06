@@ -66,17 +66,16 @@ def build_graph(cluster, image_url, return_list):
             processed_image = inception_preprocessing.preprocess_image(image, image_size, image_size, is_training=False)
             processed_images  = tf.expand_dims(processed_image, 0)
             shared_image = tf.identity(processed_images, name="shared_image")
-
-            # tell the workers the image preprocessing is done
-            # now printing debugging info
-            run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-            run_metadata = tf.RunMetadata()
             
             #TODO: call enqueue_many to put one item on queue per worker
                 # do this after stopping is fixed
-            tf.Session(server.target).run(img_ready_queue.enqueue(1), options=run_options, run_metadata=run_metadata)
-            #print("Image ready enqueue!")
+            enqueue_op = img_ready_queue.enqueue
             
+        # tell the workers the image preprocessing is done
+        run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+        run_metadata = tf.RunMetadata()
+        tf.Session(server.target).run(enqueue_op(1), options=run_options, run_metadata=run_metadata)
+        #print("Image ready enqueue!")
 
         # Create the model, use the default arg scope to configure the batch norm parameters.
         with slim.arg_scope(inception.inception_v1_dist_arg_scope()):
