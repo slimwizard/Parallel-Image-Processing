@@ -7,7 +7,7 @@ TESTING = False
 if cwd[-len("googlenet"):] == "googlenet": # for calling this file as the entry point, from this directory
     import dist_googlenet as dg
     TESTING = True
-else
+else:
     import googlenet.dist_googlenet as dg # for calling server.py as the entry point, from the server directory
 
 def pass_url_to_graph(image_url, return_list):
