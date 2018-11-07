@@ -11,8 +11,11 @@ else:
 
 def pass_url_to_graph(image_url, return_list):
     cluster = tf.train.ClusterSpec({
-        "worker": ["138.47.134.145:2222"],
-        "ps": ["138.47.134.145:2223"]})
+        "worker": [ "192.168.0.2:2222",
+                    "192.168.0.5:2222",
+                    "192.168.0.8:2222"
+                  ],
+        "ps": ["192.168.0.3:2222"]})
     dg.build_graph(cluster, image_url, return_list)
 
 if TESTING:

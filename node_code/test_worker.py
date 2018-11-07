@@ -6,8 +6,11 @@ import socket
 # functionality depends on the jobs dictionary being exactly the same
 def main():
     jobs = {
-            "worker": ["138.47.134.145:2222"],
-            "ps": ["138.47.134.145:2223"]
+            "worker": [ "192.168.0.2:2222",
+                        "192.168.0.5:2222",
+                        "192.168.0.8:2222"
+                      ],
+            "ps": ["192.168.0.3:2222"]
            }
     cluster = tf.train.ClusterSpec(jobs)
 
