@@ -1,1 +1,1 @@
-run "python -m http.server"
+run "python -m http.server" from this directory

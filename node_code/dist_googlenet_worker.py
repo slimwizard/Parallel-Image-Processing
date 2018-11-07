@@ -42,7 +42,7 @@ def build_graph(cluster, task):
 
     image_size = inception.inception_v1_dist.default_image_size
     with tf.Graph().as_default():
-        # create a queues to be shared with the ps
+        # create a queue to be shared with the ps
         with tf.device('/job:worker/task:'+str(task)):
             done_queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='done_queue', shapes=[])
             img_ready_queue = tf.FIFOQueue(cluster.num_tasks('worker'), tf.int32, shared_name='img_ready_queue')
@@ -77,4 +77,3 @@ def build_graph(cluster, task):
             print("before done enqueue")
             sess.run(done_queue.enqueue(1))
             print("after done enqueue")
-            #print("Done enqueue!")
