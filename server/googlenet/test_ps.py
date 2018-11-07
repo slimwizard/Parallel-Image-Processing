@@ -3,17 +3,18 @@ import os
 cwd = os.getcwd()
 
 TESTING = False
-if cwd[-len("googlenet"):] == "googlenet":
+
+if cwd[-len("googlenet"):] == "googlenet": # for calling this file as the entry point, from this directory
     import dist_googlenet as dg
     TESTING = True
-else:
-    import googlenet.dist_googlenet as dg
+else
+    import googlenet.dist_googlenet as dg # for calling server.py as the entry point, from the server directory
 
 def pass_url_to_graph(image_url, return_list):
     cluster = tf.train.ClusterSpec({
-        "worker": [ "192.168.0.2:2222",
-                    "192.168.0.5:2222",
-                    "192.168.0.8:2222"
+        "worker": [ "192.168.0.2:2222"#,
+                    #"192.168.0.5:2222",
+                    #"192.168.0.8:2222"
                   ],
         "ps": ["192.168.0.3:2222"]})
     dg.build_graph(cluster, image_url, return_list)
