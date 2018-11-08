@@ -33,15 +33,16 @@ def build_graph(cluster, image_url, return_list):
     prob_list = return_list
     
     # default picture for testing
-    #if image_url == None:
-    #    image_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Bow_bow.jpg/800px-Bow_bow.jpg"
-    #image_string = urllib.urlopen(image_url).read()
-    image_string = tf.read_file("/home/philiptkd/Downloads/Dependency_Tree.png") # I lost internet
+    if image_url == None:
+        image_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Bow_bow.jpg/800px-Bow_bow.jpg"
+    image_string = urllib.urlopen(image_url).read()
+    #image_string = tf.read_file("/home/philiptkd/Downloads/Dependency_Tree.png") # I lost internet
     image_size = inception.inception_v1_dist.default_image_size
     
-    # shared done list and image
+    # shared done list, ready list, and image
     with tf.device("/job:ps/task:0"):
         done_list = tf.get_variable("done_list", [cluster.num_tasks('worker')+1], tf.int32, tf.zeros_initializer)
+        ready_list = tf.get_variable("ready_list", [cluster.num_tasks('worker')], tf.int32, tf.zeros_initializer)
         # image
         image = tf.image.decode_jpeg(image_string, channels=3)
         processed_image = inception_preprocessing.preprocess_image(image, image_size, image_size, is_training=False)
@@ -72,6 +73,10 @@ def build_graph(cluster, image_url, return_list):
         slim.get_model_variables('InceptionV1'))
     init_fn(sess)
     sess.run(tf.global_variables_initializer()) # to initialize variables that aren't model parameters
+    
+    # wait for workers to acknowledge variables have been initialized
+    while sess.run(tf.reduce_sum(ready_list)) < cluster.num_tasks('worker'):
+        pass
     
     # do the thing
     print("before getting probs")

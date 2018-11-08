@@ -29,10 +29,11 @@ def build_graph(cluster, task):
     image_size = inception.inception_v1_dist.default_image_size
     shared_image_shape = np.array([1, image_size, image_size, 3])
     
-    # shared done list and shared image 
+    # shared done list, ready list, and shared image 
     with tf.device("/job:ps/task:0"):
         done_list = tf.get_variable("done_list", [cluster.num_tasks('worker')+1], tf.int32, tf.zeros_initializer)
         shared_image = tf.get_variable("shared_image", shared_image_shape, tf.float32)
+        ready_list = tf.get_variable("ready_list", [cluster.num_tasks('worker')], tf.int32, tf.zeros_initializer)
     
     server = tf.train.Server(cluster, job_name='worker', task_index=task)
     sess = tf.Session(target=server.target)
@@ -49,8 +50,11 @@ def build_graph(cluster, task):
     while len(uninit) > 0:
         print(uninit)
         uninit = sess.run(tf.report_uninitialized_variables())
-    
-    # wait until ps task is donei
+   
+    # worker tells the ps it's ready for computation
+    sess.run(tf.scatter_update(ready_list, [task], 1)) 
+
+    # wait until ps task is done
     print("waiting for ps to be done")
     while sess.run(tf.reduce_sum(done_list)) == 0:
         pass
