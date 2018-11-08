@@ -71,7 +71,7 @@ def build_graph(cluster, image_url, return_list):
     init_fn = slim.assign_from_checkpoint_fn(
         os.path.join(checkpoints_dir, 'inception_v1.ckpt'),
         slim.get_model_variables('InceptionV1'))
-    sess.run(tf.initialize_variables([done_list, ready_list, shared_image]) # initialize variables that aren't model parameters
+    sess.run(tf.initialize_variables([done_list, ready_list, shared_image])) # initialize variables that aren't model parameters
     init_fn(sess)
     
     # wait for workers to acknowledge variables have been initialized
