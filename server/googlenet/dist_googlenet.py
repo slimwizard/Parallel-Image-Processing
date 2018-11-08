@@ -81,6 +81,8 @@ def build_graph(cluster, image_url, return_list):
     
     # do the thing
     print("before getting probs")
+    run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+    run_metadata = tf.RunMetadata()
     np_image, probabilities = sess.run([image, probabilities], options=run_options, run_metadata=run_metadata)
     print("after getting probs")
 
