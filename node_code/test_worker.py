@@ -6,11 +6,11 @@ import dist_googlenet_worker as dg # for calling this file as the entry point, f
 # functionality depends on the jobs dictionary being exactly the same
 def main():
     jobs = {
-            "worker": [ "192.168.0.2:2222"#,
+            "worker": [ "192.168.0.5:2222"#,
                         #"192.168.0.5:2222",
                         #"192.168.0.8:2222"
                       ],
-            "ps": ["192.168.0.3:2222"]
+            "ps": ["192.168.0.6:2222"]
            }
     cluster = tf.train.ClusterSpec(jobs)
 
