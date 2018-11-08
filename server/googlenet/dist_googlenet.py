@@ -77,7 +77,7 @@ def build_graph(cluster, image_url, return_list):
     # wait for workers to acknowledge variables have been initialized
     while sess.run(tf.reduce_sum(ready_list)) < cluster.num_tasks('worker'):
         pass
-    
+
     # do the thing
     print("before getting probs")
     run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
