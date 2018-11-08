@@ -7,7 +7,7 @@ import os
 import tensorflow as tf
 import matplotlib
 import matplotlib.pyplot as plt
-from datetime import datetime
+import base64
 
 try:
     import urllib2 as urllib
@@ -30,16 +30,23 @@ from preprocessing import inception_preprocessing
 from tensorflow.contrib import slim
 
 def build_graph(cluster, image_url, return_list):
-    # shared list on the ps task indicating which tasks have completed
-    with tf.device("/job:ps/task:0"):
-        done_list = tf.get_variable("done_list", [cluster.num_tasks('worker')+1], tf.int32, tf.zeros_initializer)
-
-    # probabilities listing
     prob_list = return_list
     
     # default picture for testing
-    if image_url == None:
-        image_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Bow_bow.jpg/800px-Bow_bow.jpg"
+    #if image_url == None:
+    #    image_url = "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Bow_bow.jpg/800px-Bow_bow.jpg"
+    #image_string = urllib.urlopen(image_url).read()
+    image_string = tf.read_file("/home/philiptkd/Downloads/Dependency_Tree.png") # I lost internet
+    image_size = inception.inception_v1_dist.default_image_size
+    
+    # shared done list and image
+    with tf.device("/job:ps/task:0"):
+        done_list = tf.get_variable("done_list", [cluster.num_tasks('worker')+1], tf.int32, tf.zeros_initializer)
+        # image
+        image = tf.image.decode_jpeg(image_string, channels=3)
+        processed_image = inception_preprocessing.preprocess_image(image, image_size, image_size, is_training=False)
+        processed_images  = tf.expand_dims(processed_image, 0)
+        shared_image = tf.Variable(processed_images, name="shared_image") 
 
     #download the inception v1 checkpoint if we need to 
     url = "http://download.tensorflow.org/models/inception_v1_2016_08_28.tar.gz"
@@ -53,20 +60,6 @@ def build_graph(cluster, image_url, return_list):
     server = tf.train.Server(cluster, job_name="ps", task_index=0)
     sess = tf.Session(target=server.target)
 
-    # image preprocessing
-    image_size = inception.inception_v1_dist.default_image_size
-    image_string = urllib.urlopen(image_url).read()
-    image = tf.image.decode_jpeg(image_string, channels=3)
-    processed_image = inception_preprocessing.preprocess_image(image, image_size, image_size, is_training=False)
-    processed_images  = tf.expand_dims(processed_image, 0)
-    shared_image = tf.identity(processed_images, name="shared_image")   
-            
-    # tell the workers the image preprocessing is done
-    with tf.device("/job:ps/task:0"):
-        img_done = tf.Variable(0, name='img_done')
-    sess.run(tf.global_variables_initializer())
-    sess.run(img_done.assign_add(1))
-
     # Create the model, use the default arg scope to configure the batch norm parameters.
     with slim.arg_scope(inception.inception_v1_dist_arg_scope()):
         with tf.device(tf.train.replica_device_setter(cluster=cluster)):
@@ -78,6 +71,7 @@ def build_graph(cluster, image_url, return_list):
         os.path.join(checkpoints_dir, 'inception_v1.ckpt'),
         slim.get_model_variables('InceptionV1'))
     init_fn(sess)
+    sess.run(tf.global_variables_initializer()) # to initialize variables that aren't model parameters
     
     # do the thing
     print("before getting probs")
@@ -86,22 +80,22 @@ def build_graph(cluster, image_url, return_list):
     np_image, probabilities = sess.run([image, probabilities], options=run_options, run_metadata=run_metadata)
     print("after getting probs")
 
-    # indicate that the ps task is done
-    tf.scatter_update(done_list, [0], 1)
-   
-    # wait until all tasks are done
-    num_done = 1
-    while num_done < cluster.num_tasks('worker')+1:
-        num_done = sess.run(tf.reduce_sum(done_list)) 
-        print(num_done)
-
-    sess.close()
-
     # see who did what
     for device in run_metadata.step_stats.dev_stats:
         print(device.device)
         for node in device.node_stats:
             print("  ", node.node_name)
+
+    # indicate that the ps task is done
+    sess.run(tf.scatter_update(done_list, [0], 1))
+   
+    # wait until all tasks are done
+    num_done = 1
+    while num_done < cluster.num_tasks('worker')+1:
+        num_done = sess.run(tf.reduce_sum(done_list)) 
+
+    sess.close()
+
 
     probabilities = probabilities[0, 0:]
     sorted_inds = [i[0] for i in sorted(enumerate(-probabilities), key=lambda x:x[1])]
