@@ -43,7 +43,6 @@ def upload_file():
             file_uploaded.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             uploaded_file_url = str(request.base_url) + "/" + str(filename)
             probabilities = spawn_process(send_to_googlenet, uploaded_file_url)
-            #probabilities = ["string1", "string2", "string3"]
             toprint = "<br>".join(probabilities)
             return jsonify({'key':toprint}), 200
 

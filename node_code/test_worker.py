@@ -6,9 +6,9 @@ import dist_googlenet_worker as dg # for calling this file as the entry point, f
 # functionality depends on the jobs dictionary being exactly the same
 def main():
     jobs = {
-            "worker": [ "192.168.0.4:2222"#,
-                        #"192.168.0.5:2222",
-                        #"192.168.0.8:2222"
+            "worker": [ "192.168.0.4:2222",
+                        "192.168.0.7:2222",
+                        "192.168.0.8:2222"
                       ],
             "ps": ["192.168.0.5:2222"]
            }

@@ -59,7 +59,7 @@ def build_graph(cluster, task):
     #run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
     #run_metadata = tf.RunMetadata()
     #np_image, probabilities = sess.run([shared_image, probabilities], options=run_options, run_metadata=run_metadata)
-    print("after getting probs")
+    #print("after getting probs")
 
     # see who did what
     #for device in run_metadata.step_stats.dev_stats:
