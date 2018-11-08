@@ -44,6 +44,10 @@ def build_graph(cluster, task):
             logits, _ = inception.inception_v1_dist(shared_image, num_classes=1001, is_training=False)
             probabilities = tf.nn.softmax(logits)
         
+    # wait until all variables are initialized
+    while sess.run(tf.report_uninitialized_variables()):
+        pass
+    
     # wait until ps task is done
     while sess.run(tf.reduce_sum(done_list)) == 0:
         pass

@@ -64,6 +64,7 @@ def build_graph(cluster, image_url, return_list):
     # tell the workers the image preprocessing is done
     with tf.device("/job:ps/task:0"):
         img_done = tf.Variable(0, name='img_done')
+    sess.run(tf.global_variables_initializer())
     sess.run(img_done.assign_add(1))
 
     # Create the model, use the default arg scope to configure the batch norm parameters.
