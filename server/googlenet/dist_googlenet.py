@@ -71,8 +71,8 @@ def build_graph(cluster, image_url, return_list):
     init_fn = slim.assign_from_checkpoint_fn(
         os.path.join(checkpoints_dir, 'inception_v1.ckpt'),
         slim.get_model_variables('InceptionV1'))
+    sess.run(tf.initialize_variables([done_list, ready_list, shared_image]) # initialize variables that aren't model parameters
     init_fn(sess)
-    sess.run(tf.global_variables_initializer()) # to initialize variables that aren't model parameters
     
     # wait for workers to acknowledge variables have been initialized
     while sess.run(tf.reduce_sum(ready_list)) < cluster.num_tasks('worker'):
@@ -101,10 +101,8 @@ def build_graph(cluster, image_url, return_list):
 
     sess.close()
 
-
     probabilities = probabilities[0, 0:]
     sorted_inds = [i[0] for i in sorted(enumerate(-probabilities), key=lambda x:x[1])]
-
 
     # display results
     #plt.figure()
