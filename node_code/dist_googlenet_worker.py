@@ -40,7 +40,7 @@ def build_graph(cluster, task):
 
     # build the graph
     with slim.arg_scope(inception.inception_v1_dist_arg_scope()):
-        with tf.device(tf.train.replica_setter(cluster=cluster)):
+        with tf.device(tf.train.replica_device_setter(cluster=cluster)):
             logits, _ = inception.inception_v1_dist(shared_image, num_classes=1001, is_training=False)
             probabilities = tf.nn.softmax(logits)
         
