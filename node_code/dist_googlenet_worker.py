@@ -54,13 +54,25 @@ def build_graph(cluster, task):
     # worker tells the ps it's ready for computation
     sess.run(tf.scatter_update(ready_list, [task], 1)) 
 
-    # wait until ps task is done
-    print("waiting for ps to be done")
-    while sess.run(tf.reduce_sum(done_list)) == 0:
-        pass
-        
-    # this task must be done?
-    print("I am done")
+    # do the thing
+    print("before getting probs")
+    run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+    run_metadata = tf.RunMetadata()
+    np_image, probabilities = sess.run([image, probabilities], options=run_options, run_metadata=run_metadata)
+    print("after getting probs")
+
+    # see who did what
+    for device in run_metadata.step_stats.dev_stats:
+        print(device.device)
+        for node in device.node_stats:
+            print("  ", node.node_name)
+
+    # indicate that this task is done
     sess.run(tf.scatter_update(done_list, [task+1], 1))
-  
+   
+    # wait until all tasks are done
+    num_done = 1
+    while num_done < cluster.num_tasks('worker')+1:
+        num_done = sess.run(tf.reduce_sum(done_list)) 
+    
     sess.close()
