@@ -90,8 +90,10 @@ def build_graph(cluster, image_url, return_list):
     tf.scatter_update(done_list, [0], 1)
    
     # wait until all tasks are done
-    while sess.run(tf.reduce_sum(done_list)) < cluster.num_tasks('worker')+1:
-        pass
+    num_done = 1
+    while num_done < cluster.num_tasks('worker')+1:
+        num_done = sess.run(tf.reduce_sum(done_list)) 
+        print(num_done)
 
     sess.close()
 

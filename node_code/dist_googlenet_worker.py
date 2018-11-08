@@ -45,14 +45,17 @@ def build_graph(cluster, task):
             probabilities = tf.nn.softmax(logits)
         
     # wait until all variables are initialized
+    print("waiting for variables to be initialized")
     while len(sess.run(tf.report_uninitialized_variables())) > 0:
         pass
     
-    # wait until ps task is done
+    # wait until ps task is donei
+    print("waiting for ps to be done")
     while sess.run(tf.reduce_sum(done_list)) == 0:
         pass
         
     # this task must be done?
+    print("I am done")
     tf.scatter_update(done_list, [task+1], 1)
   
     sess.close()
