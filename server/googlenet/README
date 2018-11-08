@@ -1,16 +1,9 @@
-this splits up googlenet between a laptop and a single pi.
-it doesn't do so efficiently.
-basically, the first half is on the ps task (laptop), and the second half is on the worker task (pi).
-
-next steps would be to scale up and distribute more efficiently.
-
 to run, you need the tensorflow/models git repo.
 also, inception_v1_dist.py and inception.py should be moved from 
 	requirements/ to models/research/slim/nets, replacing existing files when necessary
 
-this was for developing a graceful exit. inspiration from here:
-https://stackoverflow.com/questions/39810356/shut-down-server-in-tensorflow#
+it looks like multiple pis are participating, but the automatic placement is putting all computation on worker 0.
+might need to write our own placement strategy function.
+or, maybe we just need to put the "with tf.device(tf.train.replica_device_setter())" line inside the inception file
 
-for some reason, the pi now complains about over 10% of its memory being allocated
-
-right now, everything happens twice
+also, one pi doesn't see when variables are updated for some reason.
