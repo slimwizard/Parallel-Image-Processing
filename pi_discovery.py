@@ -1,4 +1,6 @@
 import argparse
+import configparser
+import netifaces
 import paramiko
 import re
 import subprocess
@@ -55,7 +57,8 @@ def remove_non_pi(ip_addr_list, trust_unknown_hosts=False):
           "Raspberry Pi's: {0}".format(ip_addr_list))
     return ip_addr_list
 
-#TODO(CP) get current IP for ps
+def get_curr_ip():
+    return netifaces.ifaddresses("wlp2s0")[netifaces.AF_INET][0]["addr"]
 
 # parse args
 parser = argparse.ArgumentParser()
@@ -75,3 +78,13 @@ ip_stdout, ip_stderr = ip_addr_list.communicate()
 ip_addr_list = ip_stdout.decode("utf-8")
 ip_addr_list = ip_addr_list.split("\n")
 ip_addr_list = remove_non_pi(ip_addr_list)
+curr_ip = get_curr_ip()
+
+# create config file
+config = configparser.ConfigParser()
+ip_addr_list = ", ".join(ip_addr_list)
+config["IP Listing"] = {"worker" : ip_addr_list,
+                        "ps" : curr_ip}
+config_file = "ps_worker.ini"
+with open(config_file, "w") as configfile:
+    config.write(configfile)
