@@ -17,6 +17,7 @@ def pass_url_to_graph(image_url, return_list):
                         #"192.168.86.172:2222"
                       ],
             "ps": ["192.168.0.6:2222"]
+            })
     dg.build_graph(cluster, image_url, return_list)
 
 if TESTING:
