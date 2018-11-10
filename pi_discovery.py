@@ -33,7 +33,7 @@ def is_default_pi(ip_addr, trust_unknown_hosts=False):
 
 # remove anything in a list that isn't a pi's IP address
 def remove_non_pi(ip_addr_list, trust_unknown_hosts=False):
-    print("The IP addresses that will be check if they are "
+    print("The IP addresses that will be checked if they are "
           "Raspberry Pi's: {0}".format(ip_addr_list))
 
     # remove any false positives that aren't IP's
