@@ -5,13 +5,8 @@ import dist_googlenet_worker as dg # for calling this file as the entry point, f
 # distribute this code exactly to all workers
 # functionality depends on the jobs dictionary being exactly the same
 def main():
-    jobs = {
-            "worker": [ "192.168.0.2:2222"#,
-                        #"192.168.86.176:2222",
-                        #"192.168.86.172:2222"
-                      ],
-            "ps": ["192.168.0.6:2222"]
-           }
+    config.read("./ps_worker.ini")
+    jobs = dict(config.items("IP Listing"))
     cluster = tf.train.ClusterSpec(jobs)
 
     my_ip = get_ip()
