@@ -1,10 +1,11 @@
+import configparser
 import tensorflow as tf
 from time import sleep
 import multiprocessing
 
-    # config.read("./ps_worker.ini")
-    # jobs = dict(config.items("IP Listing"))
-jobs = {"worker": ["192.168.0.2:2222"], "ps": ["192.168.0.3:2222"]}
+config = configparser.ConfigParser()
+config.read("./node_code/ps_worker.ini")
+jobs = dict(config.items("IP Listing"))
 cluster = tf.train.ClusterSpec(jobs)
 
 def ps():

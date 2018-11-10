@@ -57,6 +57,7 @@ def remove_non_pi(ip_addr_list, trust_unknown_hosts=False):
           "Raspberry Pi's: {0}".format(ip_addr_list))
     return ip_addr_list
 
+# if an error is found here, check what interfaces are running and adjust
 def get_curr_ip():
     return netifaces.ifaddresses("wlp2s0")[netifaces.AF_INET][0]["addr"]
 
