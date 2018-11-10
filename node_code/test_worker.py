@@ -1,3 +1,4 @@
+import configparser
 import tensorflow as tf
 import socket
 import dist_googlenet_worker as dg # for calling this file as the entry point, from the node_code directory
@@ -5,6 +6,7 @@ import dist_googlenet_worker as dg # for calling this file as the entry point, f
 # distribute this code exactly to all workers
 # functionality depends on the jobs dictionary being exactly the same
 def main():
+    config = configparser.ConfigParser()
     config.read("./ps_worker.ini")
     jobs = dict(config.items("IP Listing"))
     cluster = tf.train.ClusterSpec(jobs)

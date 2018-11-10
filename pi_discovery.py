@@ -78,12 +78,11 @@ ip_stdout, ip_stderr = ip_addr_list.communicate()
 ip_addr_list = ip_stdout.decode("utf-8")
 ip_addr_list = ip_addr_list.split("\n")
 ip_addr_list = remove_non_pi(ip_addr_list)
-curr_ip = get_curr_ip().split(" ")
+curr_ip = get_curr_ip()
 
-#/home/pi/cloud_computing/Parallel-Image-Processing
 # create config file
 config = configparser.ConfigParser()
-config["IP Listing"] = {"worker" : ip_addr_list,
+config["IP Listing"] = {"worker" : ", ".join(ip_addr_list),
                         "ps" : curr_ip}
 config_file = "./node_code/ps_worker.ini"
 with open(config_file, "w") as configfile:
