@@ -8,7 +8,9 @@ import dist_googlenet_worker as dg # for calling this file as the entry point, f
 def main():
     config = configparser.ConfigParser()
     config.read("./ps_worker.ini")
-    jobs = dict(config.items("IP Listing"))
+    jobs = { "worker" : config["IP Listing"]["worker"].split(", ")
+             "ps" : config["IP Listing"]["ps"]
+    }
     cluster = tf.train.ClusterSpec(jobs)
 
     my_ip = get_ip()

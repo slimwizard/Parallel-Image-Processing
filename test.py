@@ -4,8 +4,10 @@ from time import sleep
 import multiprocessing
 
 config = configparser.ConfigParser()
-config.read("./node_code/ps_worker.ini")
-jobs = dict(config.items("IP Listing"))
+config.read("./ps_worker.ini")
+jobs = { "worker" : config["IP Listing"]["worker"].split(", ")
+         "ps" : config["IP Listing"]["ps"]
+}
 cluster = tf.train.ClusterSpec(jobs)
 
 def ps():
