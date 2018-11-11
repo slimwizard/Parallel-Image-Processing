@@ -59,7 +59,7 @@ def remove_non_pi(ip_addr_list, trust_unknown_hosts=False):
 
 # if an error is found here, check what interfaces are running and adjust
 def get_curr_ip():
-    return netifaces.ifaddresses("eno1")[netifaces.AF_INET][0]["addr"]
+    return netifaces.ifaddresses("eth0")[netifaces.AF_INET][0]["addr"]
 
 # parse args
 parser = argparse.ArgumentParser()
