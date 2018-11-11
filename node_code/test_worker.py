@@ -19,7 +19,7 @@ def main():
         ps = str(ps) + ":2222"
         ps_listing.append(ps)
 
-    jobs = { "worker" : worker_listing,
+    jobs = { "worker" : workers_listing,
              "ps" : ps_listing
     }
     cluster = tf.train.ClusterSpec(jobs)
