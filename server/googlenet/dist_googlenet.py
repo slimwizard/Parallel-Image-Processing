@@ -28,6 +28,7 @@ from tensorflow.contrib import slim
 
 def build_graph(cluster, image_url, return_list):
     prob_list = return_list
+    num_workers = cluster.num_tasks('worker')
     
     # default picture for testing
     if image_url == None:
@@ -38,8 +39,8 @@ def build_graph(cluster, image_url, return_list):
     
     # shared done list, ready list, and image
     with tf.device("/job:ps/task:0"):
-        done_list = tf.get_variable("done_list", [cluster.num_tasks('worker')+1], tf.int32, tf.zeros_initializer)
-        ready_list = tf.get_variable("ready_list", [cluster.num_tasks('worker')], tf.int32, tf.zeros_initializer)
+        done_list = tf.get_variable("done_list", [num_workers+1], tf.int32, tf.zeros_initializer)
+        ready_list = tf.get_variable("ready_list", [num_workers], tf.int32, tf.zeros_initializer)
         # image
         image = tf.image.decode_jpeg(image_string, channels=3)
         processed_image = inception_preprocessing.preprocess_image(image, image_size, image_size, is_training=False)
@@ -60,7 +61,7 @@ def build_graph(cluster, image_url, return_list):
 
     # Create the model, use the default arg scope to configure the batch norm parameters.
     with slim.arg_scope(inception.inception_v1_dist_arg_scope()):
-        logits, _ = inception.inception_v1_dist(shared_image, cluster, num_classes=1001, is_training=False, reuse=tf.AUTO_REUSE)
+        logits, _ = inception.inception_v1_dist(shared_image, num_workers, num_classes=1001, is_training=False, reuse=tf.AUTO_REUSE)
         probabilities = tf.nn.softmax(logits)
 
     # initialization function that uses saved parameters
@@ -71,28 +72,28 @@ def build_graph(cluster, image_url, return_list):
     init_fn(sess)
     
     # wait for workers to acknowledge variables have been initialized
-    #while sess.run(tf.reduce_sum(ready_list)) < cluster.num_tasks('worker'):
-    #    pass
+    while sess.run(tf.reduce_sum(ready_list)) < num_workers:
+        pass
 
     # do the thing
-    #print("before getting probs")
-    #run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-    #run_metadata = tf.RunMetadata()
-    #np_image, probabilities = sess.run([shared_image, probabilities], options=run_options, run_metadata=run_metadata)
-    #print("after getting probs")
+    print("before getting probs")
+    run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+    run_metadata = tf.RunMetadata()
+    np_image, probabilities = sess.run([shared_image, probabilities], options=run_options, run_metadata=run_metadata)
+    print("after getting probs")
 
     # see who did what
-    #for device in run_metadata.step_stats.dev_stats:
-    #    print(device.device)
-    #    for node in device.node_stats:
-    #        print("  ", node.node_name)
+    for device in run_metadata.step_stats.dev_stats:
+        print(device.device)
+        for node in device.node_stats:
+            print("  ", node.node_name)
 
     # indicate that the ps task is done
     sess.run(tf.scatter_update(done_list, [0], 1))
    
     # wait until all tasks are done
     num_done = 1
-    while num_done < cluster.num_tasks('worker')+1:
+    while num_done < num_workers+1:
         num_done = sess.run(tf.reduce_sum(done_list)) 
 
     sess.close()
