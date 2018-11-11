@@ -379,7 +379,7 @@ def inception_v1_dist(inputs,
   with tf.variable_scope(scope, 'InceptionV1', [inputs], reuse=reuse) as scope:
     with slim.arg_scope([slim.batch_norm, slim.dropout],
                         is_training=is_training):
-      net, end_points, next_worker = inception_v1_dist_base(inputs, num_workers, scope=scope)
+      net, end_points = inception_v1_dist_base(inputs, num_workers, scope=scope)
       with tf.device("/job:worker/task:0"):
           with tf.variable_scope('Logits'):
                 if global_pool:
