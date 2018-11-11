@@ -4,6 +4,7 @@ import netifaces
 import paramiko
 import re
 import subprocess
+from os.path import expanduser
 
 # compiles regex string that matches IPv4 addresses
 def is_ip_addr(test_string):
@@ -61,30 +62,26 @@ def remove_non_pi(ip_addr_list, trust_unknown_hosts=False):
 def get_curr_ip():
     return netifaces.ifaddresses("eno1")[netifaces.AF_INET][0]["addr"]
 
-# parse args
-parser = argparse.ArgumentParser()
-parser.add_argument("ip")
-args = parser.parse_args()
+def discover(ip): 
+    # if it's an IP given, run the nmap to find all open ssh connections
+    if is_ip_addr(ip):
+        find_pi = "nmap -T4 " + ip + "/24 -p 22"
+        find_pi = find_pi + "| grep -B4 open | grep -Po '(?:[0-9]{1,3}\.){3}[0-9]{1,3}'"
+    else:
+        raise ValueError("Please input a valid IP address.")
 
-# if it's an IP given, run the nmap to find all open ssh connections
-if is_ip_addr(args.ip):
-    find_pi = "nmap -T4 " + args.ip + "/24 -p 22"
-    find_pi = find_pi + "| grep -B4 open | grep -Po '(?:[0-9]{1,3}\.){3}[0-9]{1,3}'"
-else:
-    raise ValueError("Please input a valid IP address.")
+    # run the command and make a list of its output
+    ip_addr_list = subprocess.Popen(find_pi, shell=True, stdout=subprocess.PIPE)
+    ip_stdout, ip_stderr = ip_addr_list.communicate()
+    ip_addr_list = ip_stdout.decode("utf-8")
+    ip_addr_list = ip_addr_list.split("\n")
+    ip_addr_list = remove_non_pi(ip_addr_list)
+    curr_ip = get_curr_ip()
 
-# run the command and make a list of its output
-ip_addr_list = subprocess.Popen(find_pi, shell=True, stdout=subprocess.PIPE)
-ip_stdout, ip_stderr = ip_addr_list.communicate()
-ip_addr_list = ip_stdout.decode("utf-8")
-ip_addr_list = ip_addr_list.split("\n")
-ip_addr_list = remove_non_pi(ip_addr_list)
-curr_ip = get_curr_ip()
-
-# create config file
-config = configparser.ConfigParser()
-config["IP Listing"] = {"worker" : ", ".join(ip_addr_list),
-                        "ps" : curr_ip}
-config_file = "./node_code/ps_worker.ini"
-with open(config_file, "w") as configfile:
-    config.write(configfile)
+    # create config file
+    config = configparser.ConfigParser()
+    config["IP Listing"] = {"worker" : ", ".join(ip_addr_list),
+                            "ps" : curr_ip}
+    config_file = expanduser("~/cloud_computing/Parallel-Image-Processing/node_code/ps_worker.ini")
+    with open(config_file, "w") as configfile:
+        config.write(configfile)
