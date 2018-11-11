@@ -8,7 +8,7 @@ config.read("./node_code/ps_worker.ini")
 workers_listing = []
 ps_listing = []
 
-for worker in config["IP Listing"]["worker"]:
+for worker in config["IP Listing"]["worker"].split(", "):
     worker = str(worker) + ":2222"
     workers_listing.append(worker)
 
