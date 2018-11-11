@@ -6,8 +6,8 @@ from __future__ import print_function
 import numpy as np
 import os
 import tensorflow as tf
-import matplotlib
-import matplotlib.pyplot as plt
+#import matplotlib
+#import matplotlib.pyplot as plt
 
 try:
     import urllib2 as urllib
@@ -39,7 +39,6 @@ if not tf.gfile.Exists(checkpoints_dir+'/inception_v1_2016_08_28.tar.gz'):
 
 image_size = inception.inception_v1.default_image_size
 with tf.Graph().as_default():
-    #TODO figure out how to kick this off when flask recieves an image
     url = 'https://upload.wikimedia.org/wikipedia/commons/7/70/EnglishCockerSpaniel_simon.jpg'
     image_string = urllib.urlopen(url).read()
     image = tf.image.decode_jpeg(image_string, channels=3)
@@ -61,13 +60,12 @@ with tf.Graph().as_default():
         probabilities = probabilities[0, 0:]
         sorted_inds = [i[0] for i in sorted(enumerate(-probabilities), key=lambda x:x[1])]
 
-    plt.figure()
-    plt.imshow(np_image.astype(np.uint8))
-    plt.axis('off')
-    plt.show()
+#    plt.figure()
+#    plt.imshow(np_image.astype(np.uint8))
+#    plt.axis('off')
+#    plt.show()
 
     names = imagenet.create_readable_names_for_imagenet_labels()
     for i in range(5):
         index = sorted_inds[i]
-        #TODO return this to flask in a usable format
         print('Probability %0.2f%% => [%s]' % (probabilities[index] * 100, names[index]))
