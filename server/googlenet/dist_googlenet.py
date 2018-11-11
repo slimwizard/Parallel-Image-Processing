@@ -71,21 +71,21 @@ def build_graph(cluster, image_url, return_list):
     init_fn(sess)
     
     # wait for workers to acknowledge variables have been initialized
-    while sess.run(tf.reduce_sum(ready_list)) < cluster.num_tasks('worker'):
-        pass
+    #while sess.run(tf.reduce_sum(ready_list)) < cluster.num_tasks('worker'):
+    #    pass
 
     # do the thing
-    print("before getting probs")
-    run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-    run_metadata = tf.RunMetadata()
-    np_image, probabilities = sess.run([shared_image, probabilities], options=run_options, run_metadata=run_metadata)
-    print("after getting probs")
+    #print("before getting probs")
+    #run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+    #run_metadata = tf.RunMetadata()
+    #np_image, probabilities = sess.run([shared_image, probabilities], options=run_options, run_metadata=run_metadata)
+    #print("after getting probs")
 
     # see who did what
-    for device in run_metadata.step_stats.dev_stats:
-        print(device.device)
-        for node in device.node_stats:
-            print("  ", node.node_name)
+    #for device in run_metadata.step_stats.dev_stats:
+    #    print(device.device)
+    #    for node in device.node_stats:
+    #        print("  ", node.node_name)
 
     # indicate that the ps task is done
     sess.run(tf.scatter_update(done_list, [0], 1))
