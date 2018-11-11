@@ -41,6 +41,7 @@ def build_graph(cluster, image_url, return_list):
     with tf.device("/job:ps/task:0"):
         done_list = tf.get_variable("done_list", [num_workers+1], tf.int32, tf.zeros_initializer)
         ready_list = tf.get_variable("ready_list", [num_workers], tf.int32, tf.zeros_initializer)
+    with tf.device("/job:worker/task:0"):
         # image
         image = tf.image.decode_jpeg(image_string, channels=3)
         processed_image = inception_preprocessing.preprocess_image(image, image_size, image_size, is_training=False)

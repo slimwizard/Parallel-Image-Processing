@@ -33,9 +33,10 @@ def build_graph(cluster, task):
     # shared done list, ready list, and shared image 
     with tf.device("/job:ps/task:0"):
         done_list = tf.get_variable("done_list", [num_workers+1], tf.int32, tf.zeros_initializer)
-        shared_image = tf.get_variable("shared_image", shared_image_shape, tf.float32)
         ready_list = tf.get_variable("ready_list", [num_workers], tf.int32, tf.zeros_initializer)
-    
+    with tf.device("/job:worker/task:0"): 
+        shared_image = tf.get_variable("shared_image", shared_image_shape, tf.float32)
+
     server = tf.train.Server(cluster, job_name='worker', task_index=task)
     sess = tf.Session(target=server.target)
 
