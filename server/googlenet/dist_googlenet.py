@@ -62,11 +62,10 @@ def build_graph(cluster, image_url, return_list):
     sess = tf.Session(target=server.target)
 
     # Create the model, use the default arg scope to configure the batch norm parameters.
-    with tf.variable_scope("sharing", reuse=True):
-        with slim.arg_scope(inception.inception_v1_dist_arg_scope()):
-            with tf.device(tf.train.replica_device_setter(cluster=cluster)):
-                logits, _ = inception.inception_v1_dist(shared_image, num_classes=1001, is_training=False)
-                probabilities = tf.nn.softmax(logits)
+    with slim.arg_scope(inception.inception_v1_dist_arg_scope()):
+        with tf.device(tf.train.replica_device_setter(cluster=cluster)):
+            logits, _ = inception.inception_v1_dist(shared_image, num_classes=1001, is_training=False, reuse=tf.AUTO_REUSE)
+            probabilities = tf.nn.softmax(logits)
 
     # TROUBLESHOOTING
     #print(tf.get_default_graph().get_operations())
