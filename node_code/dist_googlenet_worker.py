@@ -48,9 +48,11 @@ def build_graph(cluster, task):
     print("waiting for variables to be initialized")
     uninit = sess.run(tf.report_uninitialized_variables())
     while len(uninit) > 0:
-        print(uninit)
+        #print(uninit)
         uninit = sess.run(tf.report_uninitialized_variables())
-    
+        for var in tf.trainable_variables():    
+            print(var.name)
+
     # worker tells the ps it's ready for computation
     sess.run(tf.scatter_update(ready_list, [task], 1)) 
 
