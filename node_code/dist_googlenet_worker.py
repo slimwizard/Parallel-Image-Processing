@@ -40,9 +40,8 @@ def build_graph(cluster, task):
 
     # build the graph
     with slim.arg_scope(inception.inception_v1_dist_arg_scope()):
-        with tf.device(tf.train.replica_device_setter(cluster=cluster, merge_devices=True)):
-            logits, _ = inception.inception_v1_dist(shared_image, num_classes=1001, is_training=False, reuse=tf.AUTO_REUSE)
-            probabilities = tf.nn.softmax(logits)
+        logits, _ = inception.inception_v1_dist(shared_image, cluster, num_classes=1001, is_training=False, reuse=tf.AUTO_REUSE)
+        probabilities = tf.nn.softmax(logits)
         
     # wait until all variables are initialized
     print("waiting for variables to be initialized")

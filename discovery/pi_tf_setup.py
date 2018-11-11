@@ -16,6 +16,14 @@ def deploy_to_host(list_of_hosts, local_files, remote_dir, local_node_code):
                 print("Placing the {0} file on {1}.".format(actual_node_file, host))
                 sftp.put(actual_node_file, remote_node_code_file, confirm=True)
 
+        # deploy one more file
+        model_path_end = "cloud_computing/Parallel-Image-Processing/models/research/slim/nets/inception_v1_dist.py"
+        model_file = expanduser("~/"+model_path_end)
+        remote_model_file = "/home/pi/"+model_path_end
+        print("Placing the {0} file on {1}.".format(model_file, host))
+        sftp.put(model_file, remote_model_file, confirm=True)
+
+
 def deploy():
     # build config
     config_file = expanduser("~/cloud_computing/Parallel-Image-Processing/node_code/ps_worker.ini")

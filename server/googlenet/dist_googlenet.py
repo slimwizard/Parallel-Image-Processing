@@ -5,8 +5,6 @@ from __future__ import print_function
 import numpy as np
 import os
 import tensorflow as tf
-import matplotlib
-import matplotlib.pyplot as plt
 import base64
 
 try:
@@ -26,7 +24,6 @@ from datasets import imagenet
 from datasets import dataset_utils
 from nets import inception
 from preprocessing import inception_preprocessing
-
 from tensorflow.contrib import slim
 
 def build_graph(cluster, image_url, return_list):
@@ -63,14 +60,8 @@ def build_graph(cluster, image_url, return_list):
 
     # Create the model, use the default arg scope to configure the batch norm parameters.
     with slim.arg_scope(inception.inception_v1_dist_arg_scope()):
-        with tf.device(tf.train.replica_device_setter(cluster=cluster, merge_devices=True)):
-            logits, _ = inception.inception_v1_dist(shared_image, num_classes=1001, is_training=False, reuse=tf.AUTO_REUSE)
-            probabilities = tf.nn.softmax(logits)
-
-    # TROUBLESHOOTING
-    #print(tf.get_default_graph().get_operations())
-    #return
-    # END TROUBLESHOOTING    
+        logits, _ = inception.inception_v1_dist(shared_image, cluster, num_classes=1001, is_training=False, reuse=tf.AUTO_REUSE)
+        probabilities = tf.nn.softmax(logits)
 
     # initialization function that uses saved parameters
     init_fn = slim.assign_from_checkpoint_fn(
@@ -85,16 +76,8 @@ def build_graph(cluster, image_url, return_list):
 
     # do the thing
     print("before getting probs")
-    run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-    run_metadata = tf.RunMetadata()
-    np_image, probabilities = sess.run([shared_image, probabilities], options=run_options, run_metadata=run_metadata)
+    np_image, probabilities = sess.run([shared_image, probabilities], config=tf.ConfigProto(log_device_placement=True))
     print("after getting probs")
-
-    # see who did what
-    for device in run_metadata.step_stats.dev_stats:
-        print(device.device)
-        for node in device.node_stats:
-            print("  ", node.node_name)
 
     # indicate that the ps task is done
     sess.run(tf.scatter_update(done_list, [0], 1))
@@ -108,12 +91,6 @@ def build_graph(cluster, image_url, return_list):
 
     probabilities = probabilities[0, 0:]
     sorted_inds = [i[0] for i in sorted(enumerate(-probabilities), key=lambda x:x[1])]
-
-    # display results
-    #plt.figure()
-    #plt.imshow(np_image.astype(np.uint8))
-    #plt.axis('off')
-    #plt.show()
 
     names = imagenet.create_readable_names_for_imagenet_labels()
     for i in range(5):

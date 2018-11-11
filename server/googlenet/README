@@ -7,3 +7,4 @@ might need to write our own placement strategy function.
 or, maybe we just need to put the "with tf.device(tf.train.replica_device_setter())" line inside the inception file
 
 also, one pi doesn't see when variables are updated for some reason.
+	UPDATE: inception_v1_dist.py was outdated on this Pi. It had explicit "with tf.device()" lines in it still. now fixed.
