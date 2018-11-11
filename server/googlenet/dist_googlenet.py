@@ -76,8 +76,16 @@ def build_graph(cluster, image_url, return_list):
 
     # do the thing
     print("before getting probs")
-    np_image, probabilities = sess.run([shared_image, probabilities], config=tf.ConfigProto(log_device_placement=True))
+    run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+    run_metadata = tf.RunMetadata()
+    np_image, probabilities = sess.run([shared_image, probabilities], options=run_options, run_metadata=run_metadata)
     print("after getting probs")
+
+    # see who did what
+    for device in run_metadata.step_stats.dev_stats:
+        print(device.device)
+        for node in device.node_stats:
+            print("  ", node.node_name)
 
     # indicate that the ps task is done
     sess.run(tf.scatter_update(done_list, [0], 1))
