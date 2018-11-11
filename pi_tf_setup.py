@@ -10,7 +10,7 @@ def deploy_to_host(list_of_hosts, local_files, remote_dir):
         sftp = paramiko.sftp_client.SFTPClient.from_transport(transport)
         for node_file in local_files:
             actual_node_file = os.path.join(local_node_code, node_file)
-            if os.path.isfile(actual_node_file):
+            if os.path.isfile(actual_node_file) and node_file[-len('.csv'):] != '.csv':
                 remote_node_code_file = os.path.join(remote_dir, node_file)
                 print("Placing the {0} file on {1}.".format(actual_node_file, host))
                 sftp.put(actual_node_file, remote_node_code_file, confirm=True)
