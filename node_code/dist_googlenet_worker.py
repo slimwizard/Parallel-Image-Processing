@@ -40,7 +40,7 @@ def build_graph(cluster, task):
 
     # build the graph
     with slim.arg_scope(inception.inception_v1_dist_arg_scope()):
-        with tf.device(tf.train.replica_device_setter(cluster=cluster)):
+        with tf.device(tf.train.replica_device_setter(cluster=cluster, merge_devices=True)):
             logits, _ = inception.inception_v1_dist(shared_image, num_classes=1001, is_training=False, reuse=tf.AUTO_REUSE)
             probabilities = tf.nn.softmax(logits)
         
@@ -48,19 +48,13 @@ def build_graph(cluster, task):
     print("waiting for variables to be initialized")
     uninit = sess.run(tf.report_uninitialized_variables())
     while len(uninit) > 0:
-        #print(uninit)
+        print(uninit)
         uninit = sess.run(tf.report_uninitialized_variables())
-        for var in tf.trainable_variables():    
-            print(var.name)
 
     # worker tells the ps it's ready for computation
     sess.run(tf.scatter_update(ready_list, [task], 1)) 
 
     # do the thing
-    print("before getting probs")
-    for var in tf.trainable_variables():    
-        print(var.name)
-
     #run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
     #run_metadata = tf.RunMetadata()
     #np_image, probabilities = sess.run([shared_image, probabilities], options=run_options, run_metadata=run_metadata)
