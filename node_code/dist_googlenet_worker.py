@@ -56,6 +56,9 @@ def build_graph(cluster, task):
 
     # do the thing
     print("before getting probs")
+    for var in tf.trainable_variables():    
+        print(var.name)
+
     #run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
     #run_metadata = tf.RunMetadata()
     #np_image, probabilities = sess.run([shared_image, probabilities], options=run_options, run_metadata=run_metadata)
