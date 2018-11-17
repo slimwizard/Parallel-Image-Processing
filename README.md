@@ -4,6 +4,8 @@ Group Project for Distrubuted Systems and Cloud Computing.
 
 Dependencies for Execution
 1. [The models git repo for TensorFlow](https://github.com/tensorflow/models) needs to be pulled into every worker and ps node in your system. It should be pulled into the same folder as the *test_ps.py* and *test_worker.py* files (located in *server/googlenet* and *node_code* repestively).
+2. Python 3.5.3.
+3. A virtual environment with TensorFlow, Paramiko, netifaces installed. See [here](https://virtualenv.pypa.io/en/latest/) for more details on installing and using virtualenv.
 
 Instructions for Execution
 1. Run *python default_discovery.py* in the *discovery* folder if you are using your own LAN with Pis connected to deploy code to all the Pis on your network. 
